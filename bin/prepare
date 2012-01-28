@@ -3,9 +3,6 @@
 
 PKG_REQS="
 code.google.com/p/go-gb/gb
-github.com/bmizerany/assert
-github.com/alecthomas/gozmq
-code.google.com/p/goprotobuf/proto
 "
 
 for pkg in $PKG_REQS; do goinstall $pkg ; done
