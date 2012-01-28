@@ -3,8 +3,13 @@ package protocol
 
 import "fmt"
 
-type OperationCode int
+const (
+    HDR_LEN   = 16
+    REQ_MAGIC = 0xA5
+    RES_MAGIC = 0x5A
+)
 
+// request opcodes
 const (
     GET    = 0x00
     PUT    = 0x01
@@ -12,8 +17,7 @@ const (
     STATS  = 0x03
 )
 
-type StatusCode int
-
+// response statuses
 const (
     OK     = 0x00
     ENOENT = 0x01
@@ -24,16 +28,17 @@ const (
 )
 
 type LtzRequest struct {
-    Opcode          uint8
-    Version         uint64
-    Key, Body       []byte
-    ResponseChannel chan LtzResponse
+    Opcode    uint8
+    Version   uint64
+    Key, Body []byte
+    Reply     chan LtzResponse
 }
 
 type LtzResponse struct {
     Status    uint16
     Version   uint64
     Key, Body []byte
+    Fatal     bool
 }
 
 func (req LtzRequest) String() string {
