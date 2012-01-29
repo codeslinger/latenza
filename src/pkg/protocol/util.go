@@ -2,12 +2,12 @@
 package protocol
 
 import (
-    "log"
-    "io"
     "bufio"
+    "encoding/binary"
+    "io"
+    "log"
     "net"
     "runtime"
-    "encoding/binary"
 )
 
 func readBytes(s net.Conn, buf []byte) {
@@ -34,19 +34,19 @@ func writeByte(s *bufio.Writer, x byte) {
 }
 
 func writeUint16(s *bufio.Writer, x uint16) {
-    buf := []byte{0,0}
+    buf := []byte{0, 0}
     binary.BigEndian.PutUint16(buf, x)
     writeBytes(s, buf)
 }
 
 func writeUint32(s *bufio.Writer, x uint32) {
-    buf := []byte{0,0,0,0}
+    buf := []byte{0, 0, 0, 0}
     binary.BigEndian.PutUint32(buf, x)
     writeBytes(s, buf)
 }
 
 func writeUint64(s *bufio.Writer, x uint64) {
-    buf := []byte{0,0,0,0,0,0,0,0}
+    buf := []byte{0, 0, 0, 0, 0, 0, 0, 0}
     binary.BigEndian.PutUint64(buf, x)
     writeBytes(s, buf)
 }

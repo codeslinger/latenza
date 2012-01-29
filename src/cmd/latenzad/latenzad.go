@@ -12,13 +12,13 @@ import (
 
 var port *int = flag.Int("p", 7007, "Port on which to listen")
 
-func startServer() (chan protocol.LtzRequest) {
+func startServer() chan protocol.LtzRequest {
     server := make(chan protocol.LtzRequest)
     go storage.Service(server)
     return server
 }
 
-func listen(port int) (net.Listener) {
+func listen(port int) net.Listener {
     s, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
     if err != nil {
         log.Fatalf("failed to bind to port %d: %s", port, err)

@@ -9,7 +9,7 @@ import (
 
 type Item struct {
     Version uint64
-    Data []byte
+    Data    []byte
 }
 
 type backing struct {
@@ -18,11 +18,11 @@ type backing struct {
 
 type handler func(req LtzRequest, b *backing) LtzResponse
 
-var handlers = map[uint8]handler {
-    GET: handleGET,
-    PUT: handlePUT,
+var handlers = map[uint8]handler{
+    GET:    handleGET,
+    PUT:    handlePUT,
     DELETE: handleDELETE,
-    STATS: handleSTATS,
+    STATS:  handleSTATS,
 }
 
 func Service(ingress chan LtzRequest) {

@@ -2,12 +2,12 @@
 package protocol
 
 import (
-    "log"
-    "io"
-    "net"
     "bufio"
-    "runtime"
     "encoding/binary"
+    "io"
+    "log"
+    "net"
+    "runtime"
 )
 
 func HandleConnection(s net.Conn, server chan LtzRequest) {
