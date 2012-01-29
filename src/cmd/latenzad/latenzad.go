@@ -7,14 +7,14 @@ import (
     "log"
     "net"
     "protocol"
-//    "storage"
+    "storage"
 )
 
 var port *int = flag.Int("p", 7007, "Port on which to listen")
 
 func startServer() (chan protocol.LtzRequest) {
     server := make(chan protocol.LtzRequest)
-//    go storage.Service(server)
+    go storage.Service(server)
     return server
 }
 

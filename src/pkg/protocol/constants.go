@@ -23,6 +23,7 @@ const (
     ENOENT = 0x01
     E2BIG  = 0x02
     EINVAL = 0x03
+    EBADVERSION = 0x04
     EBADOP = 0x80
     ENOMEM = 0x81
 )
