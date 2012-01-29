@@ -1,6 +1,7 @@
 .*.swp
 *.[568]
 *.o
+*.pb.go
 _bin
 _obj
 src/cmd/latenzad/latenzad
