@@ -8,12 +8,11 @@ import (
 )
 
 type Item struct {
-    Version uint64
     Data    []byte
 }
 
 type backing struct {
-    data map[string]Item
+    data    map[string]Item
 }
 
 type handler func(req LtzRequest, b *backing) LtzResponse
@@ -22,7 +21,6 @@ var handlers = map[uint8]handler{
     GET:    handleGET,
     PUT:    handlePUT,
     DELETE: handleDELETE,
-    STATS:  handleSTATS,
 }
 
 func Service(ingress chan LtzRequest) {
@@ -37,15 +35,14 @@ func Service(ingress chan LtzRequest) {
 
 func dispatch(req LtzRequest, b *backing) (rv LtzResponse) {
     if f, ok := handlers[req.Opcode]; ok {
-        rv = f(req, b)
-    } else {
-        rv.Status = EBADOP
+        return f(req, b)
     }
+    rv.Status = EBADOP
     return
 }
 
 func handleGET(req LtzRequest, b *backing) (rv LtzResponse) {
-    if item, ok := b.data[string(req.Key)]; ok {
+    if item, ok := b.data[string(req.Body)]; ok {
         rv.Status = OK
         rv.Body = item.Data
     } else {
@@ -56,22 +53,14 @@ func handleGET(req LtzRequest, b *backing) (rv LtzResponse) {
 
 func handlePUT(req LtzRequest, b *backing) (rv LtzResponse) {
     var item Item
-
     item.Data = req.Body
-    item.Version = 0
     rv.Status = OK
-    rv.Version = item.Version
-    b.data[string(req.Key)] = item
+//    b.data[string(req.Key)] = item
     return
 }
 
 func handleDELETE(req LtzRequest, b *backing) (rv LtzResponse) {
-    delete(b.data, string(req.Key))
+//    delete(b.data, string(req.Key))
     rv.Status = OK
-    return
-}
-
-func handleSTATS(req LtzRequest, b *backing) (rv LtzResponse) {
-    rv.Status = EINVAL
     return
 }

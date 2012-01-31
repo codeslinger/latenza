@@ -36,7 +36,6 @@ func handleRequest(sock net.Conn, server chan LtzRequest) (rv bool) {
 
     // read and parse request message
     req := parseHeader(hdrBytes)
-    readBytes(sock, req.Key)
     readBytes(sock, req.Body)
     log.Printf("processing request %s", req)
 
@@ -47,7 +46,8 @@ func handleRequest(sock net.Conn, server chan LtzRequest) (rv bool) {
     // get response from server and dispatch it or die if fatal error 
     // occurred
     resp := <-req.Reply
-    if rv = !resp.Fatal; rv {
+    rv = !resp.Fatal
+    if rv {
         log.Printf("got response %s", resp)
         sendResponse(sock, req, resp)
     } else {
@@ -62,10 +62,7 @@ func parseHeader(hdrBytes []byte) (rv LtzRequest) {
         runtime.Goexit()
     }
     rv.Opcode = hdrBytes[1]
-    rv.Key = make([]byte, binary.BigEndian.Uint16(hdrBytes[2:]))
-    bodyLen := binary.BigEndian.Uint32(hdrBytes[4:]) - uint32(len(rv.Key))
-    rv.Version = binary.BigEndian.Uint64(hdrBytes[8:])
-    rv.Body = make([]byte, bodyLen)
+    rv.Body = make([]byte, binary.BigEndian.Uint32(hdrBytes[2:]))
     return
 }
 
@@ -74,10 +71,7 @@ func sendResponse(sock net.Conn, req LtzRequest, resp LtzResponse) {
     writeByte(out, RES_MAGIC)
     writeByte(out, req.Opcode)
     writeUint16(out, resp.Status)
-    writeUint64(out, resp.Version)
-    writeUint32(out, uint32(len(resp.Key)))
     writeUint32(out, uint32(len(resp.Body)))
-    writeBytes(out, resp.Key)
     writeBytes(out, resp.Body)
     out.Flush()
 }
