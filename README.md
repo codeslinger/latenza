@@ -48,7 +48,7 @@ Data Types
 
 * A given field in a record can be one of the following:
   * String (UTF-8 encoded)
-  * Integral (64-bit integer)
+  * Integral (64-bit signed integer)
   * Set of strings
   * Set of integers
 * Data types are specified at the time of field creation.
