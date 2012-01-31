@@ -43,6 +43,6 @@ func (req LtzRequest) String() string {
 }
 
 func (resp LtzResponse) String() string {
-    return fmt.Sprintf("{LtzResponse status=%x version=%x bodylen=%d}",
+    return fmt.Sprintf("{LtzResponse status=%x bodylen=%d}",
         resp.Status, len(resp.Body))
 }
