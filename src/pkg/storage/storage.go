@@ -8,11 +8,11 @@ import (
 )
 
 type Item struct {
-    Data    []byte
+    Data []byte
 }
 
 type backing struct {
-    data    map[string]Item
+    data map[string]Item
 }
 
 type handler func(req LtzRequest, b *backing) LtzResponse
@@ -55,12 +55,12 @@ func handlePUT(req LtzRequest, b *backing) (rv LtzResponse) {
     var item Item
     item.Data = req.Body
     rv.Status = OK
-//    b.data[string(req.Key)] = item
+    //b.data[string(req.Key)] = item
     return
 }
 
 func handleDELETE(req LtzRequest, b *backing) (rv LtzResponse) {
-//    delete(b.data, string(req.Key))
+    //delete(b.data, string(req.Key))
     rv.Status = OK
     return
 }

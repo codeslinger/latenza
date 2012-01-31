@@ -18,23 +18,23 @@ const (
 
 // response statuses
 const (
-    OK      = 0x0000
-    ENOENT  = 0x0001
-    E2BIG   = 0x0002
-    EINVAL  = 0x0003
-    EBADOP  = 0x0080
+    OK     = 0x0000
+    ENOENT = 0x0001
+    E2BIG  = 0x0002
+    EINVAL = 0x0003
+    EBADOP = 0x0080
 )
 
 type LtzRequest struct {
-    Opcode  uint8
-    Body    []byte
-    Reply   chan LtzResponse
+    Opcode uint8
+    Body   []byte
+    Reply  chan LtzResponse
 }
 
 type LtzResponse struct {
-    Status  uint16
-    Body    []byte
-    Fatal   bool
+    Status uint16
+    Body   []byte
+    Fatal  bool
 }
 
 func (req LtzRequest) String() string {
