@@ -7,25 +7,21 @@ import (
     "log"
 )
 
-type Item struct {
-    Data []byte
-}
-
 type backing struct {
-    data map[string]Item
+    data map[string]Table
 }
 
-type handler func(req LtzRequest, b *backing) LtzResponse
+type handler func(req Request, table *Table) Response
 
 var handlers = map[uint8]handler{
-    GET:    handleGET,
-    PUT:    handlePUT,
-    DELETE: handleDELETE,
+    GET: handleGET,
+    SET: handleSET,
+    DEL: handleDEL,
 }
 
-func Service(ingress chan LtzRequest) {
+func Run(ingress chan Request) {
     var b backing
-    b.data = make(map[string]Item)
+    b.data = make(map[string]Table)
     for {
         req := <-ingress
         log.Printf("serving request %s", req)
@@ -33,34 +29,27 @@ func Service(ingress chan LtzRequest) {
     }
 }
 
-func dispatch(req LtzRequest, b *backing) (rv LtzResponse) {
-    if f, ok := handlers[req.Opcode]; ok {
-        return f(req, b)
+func dispatch(req Request, b *backing) (rv Response) {
+    f, ok := handlers[req.Opcode]
+    if !ok {
+        rv.Status = EBADOP
+        return
     }
-    rv.Status = EBADOP
-    return
-}
-
-func handleGET(req LtzRequest, b *backing) (rv LtzResponse) {
-    if item, ok := b.data[string(req.Body)]; ok {
-        rv.Status = OK
-        rv.Body = item.Data
-    } else {
-        rv.Status = ENOENT
+    if table, ok2 := b.data[string(req.Table)]; ok2 {
+        return f(req, &table)
     }
+    rv.Status = ENOTABLE
     return
 }
 
-func handlePUT(req LtzRequest, b *backing) (rv LtzResponse) {
-    var item Item
-    item.Data = req.Body
-    rv.Status = OK
-    //b.data[string(req.Key)] = item
+func handleGET(req Request, table *Table) (rv Response) {
     return
 }
 
-func handleDELETE(req LtzRequest, b *backing) (rv LtzResponse) {
-    //delete(b.data, string(req.Key))
-    rv.Status = OK
+func handleSET(req Request, table *Table) (rv Response) {
+    return
+}
+
+func handleDEL(req Request, table *Table) (rv Response) {
     return
 }

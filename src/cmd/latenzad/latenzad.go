@@ -12,10 +12,10 @@ import (
 
 var port *int = flag.Int("p", 7007, "Port on which to listen")
 
-func startServer() chan protocol.LtzRequest {
-    server := make(chan protocol.LtzRequest)
-    go storage.Service(server)
-    return server
+func startServer() chan protocol.Request {
+    backend := make(chan protocol.Request)
+    go storage.Run(backend)
+    return backend
 }
 
 func listen(port int) net.Listener {
@@ -28,10 +28,10 @@ func listen(port int) net.Listener {
     return s
 }
 
-func accept(lsock net.Listener, server chan protocol.LtzRequest) {
+func accept(lsock net.Listener, backend chan protocol.Request) {
     for {
         if sock, err := lsock.Accept(); err == nil {
-            go protocol.HandleConnection(sock, server)
+            go protocol.HandleConnection(sock, backend)
         } else {
             log.Printf("error accepting connection: %s", err)
         }
