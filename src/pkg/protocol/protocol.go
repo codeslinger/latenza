@@ -57,8 +57,10 @@ func handleRequest(sock net.Conn, backend chan Request) (rv bool) {
         return
     }
 
-    // read and parse request message
+    // parse request message
     req := parseHeader(hdrBytes)
+    readBytes(sock, req.Table)
+    readBytes(sock, req.Key)
     readBytes(sock, req.Body)
     log.Printf("processing request %s", req)
 
@@ -85,8 +87,22 @@ func parseHeader(hdrBytes []byte) (rv Request) {
         runtime.Goexit()
     }
     rv.Opcode = hdrBytes[1]
-    rv.Body = make([]byte, binary.BigEndian.Uint32(hdrBytes[2:]))
+    rv.Table = allocArray(hdrBytes[2:], MAX_KEY_LENGTH)
+    rv.Key = allocArray(hdrBytes[6:], MAX_KEY_LENGTH)
+    rv.Body = allocArray(hdrBytes[10:], MAX_BODY_LENGTH)
     return
+}
+
+func allocArray(buf []byte, max uint32) []byte {
+    size := binary.BigEndian.Uint32(buf[:])
+    if size > max {
+        log.Printf("length was over max specified: %d > %d", size, max)
+        runtime.Goexit()
+    }
+    if size == 0 {
+        return nil
+    }
+    return make([]byte, size)
 }
 
 func sendResponse(sock net.Conn, req Request, resp Response) {
@@ -94,7 +110,11 @@ func sendResponse(sock net.Conn, req Request, resp Response) {
     writeByte(out, RES_MAGIC)
     writeByte(out, req.Opcode)
     writeUint16(out, resp.Status)
+    writeUint32(out, uint32(len(resp.Table)))
+    writeUint32(out, uint32(len(resp.Key)))
     writeUint32(out, uint32(len(resp.Body)))
+    writeBytes(out, resp.Table)
+    writeBytes(out, resp.Key)
     writeBytes(out, resp.Body)
     out.Flush()
 }

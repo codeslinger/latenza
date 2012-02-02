@@ -2,9 +2,14 @@
 package storage
 
 type Table struct {
-    Items map[string]Item
+    items map[string]Item
 }
 
 type Item struct {
-    Fields map[string][]byte
+    fields map[string][]byte
+}
+
+func (this *Table) GetItem(key string) (Item, bool) {
+    item, ok := this.items[key]
+    return item, ok
 }

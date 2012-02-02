@@ -7,6 +7,7 @@ const (
     RES_MAGIC       = 0x5A
     MAX_KEY_LENGTH  = 1024
     MAX_ITEM_LENGTH = 1048576
+    MAX_BODY_LENGTH = 1048576
 )
 
 // request opcodes

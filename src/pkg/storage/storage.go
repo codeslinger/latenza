@@ -7,7 +7,7 @@ import (
     "log"
 )
 
-type backing struct {
+type store struct {
     data map[string]Table
 }
 
@@ -20,22 +20,22 @@ var handlers = map[uint8]handler{
 }
 
 func Run(ingress chan Request) {
-    var b backing
-    b.data = make(map[string]Table)
+    var s store
+    s.data = make(map[string]Table)
     for {
         req := <-ingress
         log.Printf("serving request %s", req)
-        req.Reply <- dispatch(req, &b)
+        req.Reply <- dispatch(req, &s)
     }
 }
 
-func dispatch(req Request, b *backing) (rv Response) {
+func dispatch(req Request, s *store) (rv Response) {
     f, ok := handlers[req.Opcode]
     if !ok {
         rv.Status = EBADOP
         return
     }
-    if table, ok2 := b.data[string(req.Table)]; ok2 {
+    if table, ok2 := s.data[string(req.Table)]; ok2 {
         return f(req, &table)
     }
     rv.Status = ENOTABLE
@@ -43,6 +43,12 @@ func dispatch(req Request, b *backing) (rv Response) {
 }
 
 func handleGET(req Request, table *Table) (rv Response) {
+    _, ok := table.GetItem(string(req.Key))
+    if !ok {
+        rv.Status = ENOENT
+        return
+    }
+    rv.Status = OK
     return
 }
 
