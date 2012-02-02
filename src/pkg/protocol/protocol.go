@@ -96,7 +96,7 @@ func parseHeader(hdrBytes []byte) (rv Request) {
 func allocArray(buf []byte, max uint32) []byte {
     size := binary.BigEndian.Uint32(buf[:])
     if size > max {
-        log.Printf("length was over max specified: %d > %d", size, max)
+        log.Printf("length was over max specified: %d > %d; terminating connection", size, max)
         runtime.Goexit()
     }
     if size == 0 {

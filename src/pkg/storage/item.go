@@ -13,3 +13,15 @@ func (this *Table) GetItem(key string) (Item, bool) {
     item, ok := this.items[key]
     return item, ok
 }
+
+func (this *Table) SetItem(key string, item Item) {
+    this.items[key] = item
+}
+
+func (this *Table) DeleteItem(key string) {
+    delete(this.items, key)
+}
+
+func UnmarshalItem(body []byte) (*Item, error) {
+    return nil, nil
+}

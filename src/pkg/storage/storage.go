@@ -53,9 +53,18 @@ func handleGET(req Request, table *Table) (rv Response) {
 }
 
 func handleSET(req Request, table *Table) (rv Response) {
+    item, err := UnmarshalItem(req.Body)
+    if err != nil {
+        rv.Status = EINVAL
+        return
+    }
+    table.SetItem(string(req.Key), *item)
+    rv.Status = OK
     return
 }
 
 func handleDEL(req Request, table *Table) (rv Response) {
+    table.DeleteItem(string(req.Key))
+    rv.Status = OK
     return
 }
