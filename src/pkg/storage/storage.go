@@ -43,28 +43,39 @@ func dispatch(req Request, s *store) (rv Response) {
 }
 
 func handleGET(req Request, table *Table) (rv Response) {
-    _, ok := table.GetItem(string(req.Key))
+    item, ok := table.Get(string(req.Key))
     if !ok {
         rv.Status = ENOENT
         return
     }
+    body, err := item.Marshal()
+    if err != nil {
+        rv.Status = ENOMEM
+        return
+    }
+    rv.Body = body
+    rv.Table = req.Table
+    rv.Key = req.Key
     rv.Status = OK
     return
 }
 
 func handleSET(req Request, table *Table) (rv Response) {
-    item, err := UnmarshalItem(req.Body)
-    if err != nil {
+    var item Item
+
+    if err := item.Unmarshal(req.Body); err != nil {
         rv.Status = EINVAL
         return
     }
-    table.SetItem(string(req.Key), *item)
+    table.Set(string(req.Key), item)
+    rv.Table = req.Table
+    rv.Key = req.Key
     rv.Status = OK
     return
 }
 
 func handleDEL(req Request, table *Table) (rv Response) {
-    table.DeleteItem(string(req.Key))
+    table.Delete(string(req.Key))
     rv.Status = OK
     return
 }

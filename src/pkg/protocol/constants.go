@@ -35,4 +35,5 @@ const (
     EBADSIZE = 0x0004
     ENOTABLE = 0x0005
     EBADOP   = 0x0006
+    ENOMEM   = 0x0007
 )
