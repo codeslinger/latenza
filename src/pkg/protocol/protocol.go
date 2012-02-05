@@ -64,7 +64,7 @@ func (r Response) WriteTo(w *bufio.Writer) (err error) {
     if err = w.WriteByte(r.Opcode); err != nil {
         return err
     }
-    if err = writeUint16(*w, r.Status); err != nil {
+    if err = writeUint16(w, r.Status); err != nil {
         return err
     }
     if err = WriteEntry(w, r.Table); err != nil {

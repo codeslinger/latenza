@@ -2,7 +2,6 @@
 package protocol
 
 import (
-    "bufio"
     "encoding/binary"
     "errors"
     "io"
@@ -28,8 +27,7 @@ func ReadEntry(r io.Reader) ([]byte, error) {
     return val, nil
 }
 
-func WriteEntry(w io.Writer, data []byte) error {
-    out := bufio.NewWriter(w)
+func WriteEntry(out io.Writer, data []byte) error {
     size := []byte{0, 0, 0, 0}
     if data == nil {
         if _, err := out.Write(size); err != nil {
@@ -47,17 +45,7 @@ func WriteEntry(w io.Writer, data []byte) error {
     return nil
 }
 
-// func writeBytes(s *bufio.Writer, x []byte) {
-//     if len(x) > 0 {
-//         wrote, err := s.Write(x)
-//         if err != nil || wrote != len(x) {
-//             log.Printf("error writing to stream: %s", err)
-//             runtime.Goexit()
-//         }
-//     }
-// }
-
-func writeUint16(w bufio.Writer, x uint16) error {
+func writeUint16(w io.Writer, x uint16) error {
     buf := []byte{0, 0}
     binary.BigEndian.PutUint16(buf, x)
     n, err := w.Write(buf)
@@ -66,15 +54,3 @@ func writeUint16(w bufio.Writer, x uint16) error {
     }
     return nil
 }
-
-// func writeUint32(s *bufio.Writer, x uint32) {
-//     buf := []byte{0, 0, 0, 0}
-//     binary.BigEndian.PutUint32(buf, x)
-//     writeBytes(s, buf)
-// }
-// 
-// func writeUint64(s *bufio.Writer, x uint64) {
-//     buf := []byte{0, 0, 0, 0, 0, 0, 0, 0}
-//     binary.BigEndian.PutUint64(buf, x)
-//     writeBytes(s, buf)
-// }
