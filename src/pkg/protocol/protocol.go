@@ -3,9 +3,8 @@ package protocol
 
 import (
     "bufio"
-    "encoding/binary"
+    "errors"
     "fmt"
-    "io"
     "log"
     "net"
     "runtime"
@@ -18,19 +17,69 @@ type Request struct {
 }
 
 type Response struct {
+    Opcode           uint8
     Status           uint16
     Table, Key, Body []byte
     Fatal            bool
 }
 
-func (req Request) String() string {
+func (r Request) String() string {
     return fmt.Sprintf("{Request op=%x table=%s key=%s bodylen=%d}",
-        req.Opcode, string(req.Table), string(req.Key), len(req.Body))
+        r.Opcode, string(r.Table), string(r.Key), len(r.Body))
 }
 
-func (resp Response) String() string {
+func (r Request) ReadFrom(rd *bufio.Reader) (err error) {
+    var magic uint8
+
+    if magic, err = rd.ReadByte(); err != nil {
+        return err
+    }
+    if magic != REQ_MAGIC {
+        return errors.New(fmt.Sprintf("bad magic: 0x%x", magic))
+    }
+    if r.Opcode, err = rd.ReadByte(); err != nil {
+        return err
+    }
+    if r.Table, err = ReadEntry(rd); err != nil {
+        return err
+    }
+    if r.Key, err = ReadEntry(rd); err != nil {
+        return err
+    }
+    if r.Body, err = ReadEntry(rd); err != nil {
+        return err
+    }
+    return nil
+}
+
+func (r Response) String() string {
     return fmt.Sprintf("{Response status=%x table=%s key=%s bodylen=%d}",
-        resp.Status, string(resp.Table), string(resp.Key), len(resp.Body))
+        r.Status, string(r.Table), string(r.Key), len(r.Body))
+}
+
+func (r Response) WriteTo(w *bufio.Writer) (err error) {
+    if err = w.WriteByte(RES_MAGIC); err != nil {
+        return err
+    }
+    if err = w.WriteByte(r.Opcode); err != nil {
+        return err
+    }
+    if err = writeUint16(*w, r.Status); err != nil {
+        return err
+    }
+    if err = WriteEntry(w, r.Table); err != nil {
+        return err
+    }
+    if err = WriteEntry(w, r.Key); err != nil {
+        return err
+    }
+    if err = WriteEntry(w, r.Body); err != nil {
+        return err
+    }
+    if err = w.Flush(); err != nil {
+        return err
+    }
+    return nil
 }
 
 func HandleConnection(sock net.Conn, backend chan Request) {
@@ -48,20 +97,13 @@ func hangup(sock net.Conn) {
 }
 
 func handleRequest(sock net.Conn, backend chan Request) (rv bool) {
-    // initialize and read request header
-    hdrBytes := make([]byte, HDR_LEN)
-    bytesRead, err := io.ReadFull(sock, hdrBytes)
-    if err != nil || bytesRead != HDR_LEN {
-        log.Printf("error reading message from %s: %s (%d bytes read)",
-            sock.RemoteAddr(), err, bytesRead)
-        return
-    }
+    var req Request
 
     // parse request message
-    req := parseHeader(hdrBytes)
-    readBytes(sock, req.Table)
-    readBytes(sock, req.Key)
-    readBytes(sock, req.Body)
+    if err := req.ReadFrom(bufio.NewReader(sock)); err != nil {
+        log.Printf("failed to read request: %s", err)
+        runtime.Goexit()
+    }
     log.Printf("processing request %s", req)
 
     // send newly-formed request message to server for processing
@@ -74,47 +116,12 @@ func handleRequest(sock net.Conn, backend chan Request) (rv bool) {
     rv = !resp.Fatal
     if rv {
         log.Printf("got response %s", resp)
-        sendResponse(sock, req, resp)
+        if err := resp.WriteTo(bufio.NewWriter(sock)); err != nil {
+            log.Printf("error writing response: %s", err)
+            return true
+        }
     } else {
         log.Printf("error during processing on %s; hanging up", sock)
     }
     return
-}
-
-func parseHeader(hdrBytes []byte) (rv Request) {
-    if hdrBytes[0] != REQ_MAGIC {
-        log.Printf("bad magic: 0x%x", hdrBytes[0])
-        runtime.Goexit()
-    }
-    rv.Opcode = hdrBytes[1]
-    rv.Table = allocArray(hdrBytes[2:], MAX_KEY_LENGTH)
-    rv.Key = allocArray(hdrBytes[6:], MAX_KEY_LENGTH)
-    rv.Body = allocArray(hdrBytes[10:], MAX_BODY_LENGTH)
-    return
-}
-
-func allocArray(buf []byte, max uint32) []byte {
-    size := binary.BigEndian.Uint32(buf[:])
-    if size > max {
-        log.Printf("length was over max specified: %d > %d; terminating connection", size, max)
-        runtime.Goexit()
-    }
-    if size == 0 {
-        return nil
-    }
-    return make([]byte, size)
-}
-
-func sendResponse(sock net.Conn, req Request, resp Response) {
-    out := bufio.NewWriter(sock)
-    writeByte(out, RES_MAGIC)
-    writeByte(out, req.Opcode)
-    writeUint16(out, resp.Status)
-    writeUint32(out, uint32(len(resp.Table)))
-    writeUint32(out, uint32(len(resp.Key)))
-    writeUint32(out, uint32(len(resp.Body)))
-    writeBytes(out, resp.Table)
-    writeBytes(out, resp.Key)
-    writeBytes(out, resp.Body)
-    out.Flush()
 }

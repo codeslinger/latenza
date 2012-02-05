@@ -3,14 +3,11 @@ package storage
 
 import (
     "bytes"
-    "encoding/binary"
-    "errors"
-    "io"
+    "protocol"
 )
 
 type Item struct {
     fields map[string][]byte
-    size   uint32
 }
 
 type Table struct {
@@ -33,7 +30,6 @@ func (this *Table) Delete(key string) {
 func NewItem() *Item {
     item := new(Item)
     item.fields = make(map[string][]byte)
-    item.size = 0
     return item
 }
 
@@ -44,53 +40,38 @@ func (item *Item) Get(field string) []byte {
     return nil
 }
 
+func (item *Item) Put(field string, value []byte) {
+    item.fields[field] = value
+}
+
 func (item *Item) Marshal() ([]byte, error) {
     buf := new(bytes.Buffer)
     for k, v := range item.fields {
-        err := binary.Write(buf, binary.BigEndian, uint32(len(k)))
-        if err != nil {
+        if err := protocol.WriteEntry(buf, []byte(k)); err != nil {
             return nil, err
         }
-        buf.Write([]byte(k))
-        err = binary.Write(buf, binary.BigEndian, uint32(len(v)))
-        if err != nil {
+        if err := protocol.WriteEntry(buf, v); err != nil {
             return nil, err
         }
-        buf.Write(v)
     }
     return buf.Bytes(), nil
 }
 
-func (item *Item) Unmarshal(body []byte) error {
+func (item *Item) Unmarshal(body []byte) (err error) {
     b := bytes.NewBuffer(body[:])
-    for item.size < uint32(len(body)) {
-        k, err := readEntry(b)
-        if err != nil {
-            return err
+    i := 0
+    for i < len(body) {
+        var k, v []byte
+
+        if k, err = protocol.ReadEntry(b); err != nil {
+            return
         }
-        v, err := readEntry(b)
-        if err != nil {
-            return err
+        i += len(k)
+        if v, err = protocol.ReadEntry(b); err != nil {
+            return
         }
-        item.size += uint32(len(k) + len(v))
+        i += len(v)
         item.fields[string(k)] = v
     }
-    return nil
-}
-
-func readEntry(b *bytes.Buffer) ([]byte, error) {
-    slice := make([]byte, 4)
-    n, err := b.Read(slice[0:4])
-    if err != nil {
-        return nil, err
-    }
-    if n != 4 {
-        return nil, errors.New("could not read length from buffer")
-    }
-    size := binary.BigEndian.Uint32(slice[0:4])
-    val := make([]byte, size)
-    if _, err := io.ReadFull(b, val); err != nil {
-        return nil, err
-    }
-    return val, nil
+    return
 }
