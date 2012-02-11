@@ -12,8 +12,6 @@ First, make sure you have [Go](http://golang.org) installed and `$GOROOT` set pr
     cd latenzad
     GOPATH=`pwd` go install cmd/latenzad
 
-More info on the build tool `gb` can be found [here](http://code.google.com/p/go-gb/)
-
 API
 ---
 
