@@ -8,9 +8,10 @@ Installation
 
 First, make sure you have [Go](http://golang.org) installed and `$GOROOT` set properly. Then:
 
-    git clone git://github.com/codeslinger/latenzad.git
-    cd latenzad
-    GOPATH=`pwd` go install cmd/latenzad
+    $ git clone git://github.com/codeslinger/latenza.git
+    $ cd latenza
+    $ GOPATH=`pwd` go install cmd/latenzad
+    $ GOPATH=`pwd` go install cmd/latenza
 
 API
 ---
