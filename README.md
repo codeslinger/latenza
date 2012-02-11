@@ -10,8 +10,7 @@ First, make sure you have [Go](http://golang.org) installed and `$GOROOT` set pr
 
     git clone git://github.com/codeslinger/latenzad.git
     cd latenzad
-    ./bin/prepare
-    gb -cb
+    GOPATH=`pwd` go install cmd/latenzad
 
 More info on the build tool `gb` can be found [here](http://code.google.com/p/go-gb/)
 
