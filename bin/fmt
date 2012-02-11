@@ -1,9 +1,0 @@
-#!/bin/sh
-# vim:set ts=2 sw=2 et ai:
-cd `dirname $0`/..
-for file in `find . -type f -name \*.go`; do
-  CMD="gofmt -w -tabwidth=4 -tabs=false $file"
-  echo $CMD
-  $CMD
-done
-
