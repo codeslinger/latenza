@@ -6,12 +6,11 @@ A key-value store.
 Installation
 ------------
 
-First, make sure you have [Go](http://golang.org) installed and `$GOROOT` set properly. Then:
+First, make sure you have [Go](http://golang.org) installed and `$GOROOT` set properly. You will need Go1 or a weekly release to build; Go r60.3 or earlier is too old.
 
     $ git clone git://github.com/codeslinger/latenza.git
     $ cd latenza
-    $ GOPATH=`pwd` go install cmd/latenzad
-    $ GOPATH=`pwd` go install cmd/latenza
+    $ ./do
 
 API
 ---
