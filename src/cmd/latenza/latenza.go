@@ -1,4 +1,4 @@
-// vim:set ts=4 sw=4 et ai ft=go:
+// vim:set ts=4 sw=4 ai ft=go:
 package main
 
 import (
